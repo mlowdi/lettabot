@@ -819,9 +819,10 @@ async function main() {
     services.cronServices.forEach(c => c.stop());
     services.pollingServices.forEach(p => p.stop());
     await gateway.stop();
+    apiServer.close();
     process.exit(0);
   };
-  
+
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 }
