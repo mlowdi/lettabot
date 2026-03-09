@@ -345,9 +345,37 @@ export class LettaBot implements AgentSession {
         continue;
       }
 
+      if (directive.type === 'send-message') {
+        // Targeted message delivery to a specific channel:chat.
+        try {
+          const targetAdapter = this.channels.get(directive.channel);
+          if (!targetAdapter) {
+            log.warn(`Directive send-message skipped: channel "${directive.channel}" not registered`);
+            continue;
+          }
+          await targetAdapter.sendMessage({ chatId: directive.chat, text: this.prefixResponse(directive.text) });
+          acted = true;
+          log.info(`Directive: sent message to ${directive.channel}:${directive.chat} (${directive.text.length} chars)`);
+        } catch (err) {
+          log.warn('Directive send-message failed:', err instanceof Error ? err.message : err);
+        }
+        continue;
+      }
+
       if (directive.type === 'send-file') {
-        if (typeof adapter.sendFile !== 'function') {
-          log.warn(`Directive send-file skipped: ${adapter.name} does not support sendFile`);
+        // Resolve target adapter: use cross-channel targeting if both channel and chat are set,
+        // otherwise fall back to the adapter/chatId that triggered this response.
+        const targetAdapter = (directive.channel && directive.chat)
+          ? this.channels.get(directive.channel)
+          : adapter;
+        const targetChatId = (directive.channel && directive.chat) ? directive.chat : chatId;
+
+        if (!targetAdapter) {
+          log.warn(`Directive send-file skipped: channel "${directive.channel}" not registered`);
+          continue;
+        }
+        if (typeof targetAdapter.sendFile !== 'function') {
+          log.warn(`Directive send-file skipped: ${targetAdapter.name} does not support sendFile`);
           continue;
         }
 
@@ -383,15 +411,16 @@ export class LettaBot implements AgentSession {
         }
 
         try {
-          await adapter.sendFile({
-            chatId,
+          await targetAdapter.sendFile({
+            chatId: targetChatId,
             filePath: resolvedPath,
             caption: directive.caption,
             kind: directive.kind ?? inferFileKind(resolvedPath),
-            threadId,
+            threadId: (directive.channel && directive.chat) ? undefined : threadId,
           });
           acted = true;
-          log.info(`Directive: sent file ${resolvedPath}`);
+          const target = (directive.channel && directive.chat) ? ` to ${directive.channel}:${directive.chat}` : '';
+          log.info(`Directive: sent file ${resolvedPath}${target}`);
 
           // Optional cleanup: delete file after successful send.
           // Only honored when sendFileCleanup is enabled in config (defense-in-depth).
