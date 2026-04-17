@@ -254,7 +254,7 @@ export class HeartbeatService {
     // Skip if user sent a message in the configured window (unless manual trigger)
     if (!skipRecentCheck) {
       const { policy, minutes: skipWindowMin, milliseconds: skipWindowMs } = this.getSkipWindow();
-      const lastUserMessage = this.bot.getLastUserMessageTime();
+      const lastUserMessage = this.bot.getLastUserMessageTime() ?? undefined;
       if (skipWindowMs > 0 && lastUserMessage) {
         const msSinceLastMessage = now.getTime() - lastUserMessage.getTime();
         
@@ -306,9 +306,10 @@ export class HeartbeatService {
         }
       }
 
+      const lastUserMessage = this.bot.getLastUserMessageTime() ?? undefined;
       const message = customPrompt
-        ? buildCustomHeartbeatPrompt(customPrompt, formattedTime, timezone, this.config.intervalMinutes, actionableTodos, now)
-        : buildHeartbeatPrompt(formattedTime, timezone, this.config.intervalMinutes, actionableTodos, now);
+        ? buildCustomHeartbeatPrompt(customPrompt, formattedTime, timezone, this.config.intervalMinutes, actionableTodos, now, lastUserMessage)
+        : buildHeartbeatPrompt(formattedTime, timezone, this.config.intervalMinutes, actionableTodos, now, lastUserMessage);
       
       this.log.info(`Sending prompt (SILENT MODE):\n${'─'.repeat(50)}\n${message}\n${'─'.repeat(50)}\n`);
       

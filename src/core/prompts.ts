@@ -1,9 +1,11 @@
 /**
  * System Prompts for Different Trigger Modes
- * 
+ *
  * These prompts are injected based on how the agent was triggered.
  * The key difference is whether assistant text auto-delivers or not.
  */
+
+import { formatRelativeTime } from '../utils/time.js';
 
 /**
  * Silent mode prefix - injected for heartbeats, cron, and other background triggers
@@ -84,14 +86,19 @@ export function buildHeartbeatPrompt(
   intervalMinutes: number,
   todos: HeartbeatTodo[] = [],
   now: Date = new Date(),
+  lastUserMessage?: Date,
 ): string {
   const todoSection = buildHeartbeatTodoSection(todos, now);
+  const lastUserLine = lastUserMessage
+    ? `LAST USER MESSAGE: ${formatRelativeTime(lastUserMessage, now)}`
+    : '';
   return `
 ${SILENT_MODE_PREFIX}
 
 TRIGGER: Scheduled heartbeat
 TIME: ${time} (${timezone})
 NEXT HEARTBEAT: in ${intervalMinutes} minutes
+${lastUserLine}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -129,14 +136,19 @@ export function buildCustomHeartbeatPrompt(
   intervalMinutes: number,
   todos: HeartbeatTodo[] = [],
   now: Date = new Date(),
+  lastUserMessage?: Date,
 ): string {
   const todoSection = buildHeartbeatTodoSection(todos, now);
+  const lastUserLine = lastUserMessage
+    ? `LAST USER MESSAGE: ${formatRelativeTime(lastUserMessage, now)}`
+    : '';
   return `
 ${SILENT_MODE_PREFIX}
 
 TRIGGER: Scheduled heartbeat
 TIME: ${time} (${timezone})
 NEXT HEARTBEAT: in ${intervalMinutes} minutes
+${lastUserLine}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
