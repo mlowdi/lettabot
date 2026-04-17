@@ -64,3 +64,6 @@ logs/
 
 # Dev plans
 DEVPLAN.md
+
+# Compiled bin output
+bin/
