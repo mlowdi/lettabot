@@ -7,6 +7,7 @@
 
 import type { InboundMessage } from './types.js';
 import { normalizePhoneForStorage } from '../utils/phone.js';
+import { formatRelativeTime } from '../utils/time.js';
 
 // XML tag constants (matching Letta Code CLI conventions from constants.ts)
 export const SYSTEM_REMINDER_TAG = 'system-reminder';
@@ -218,8 +219,9 @@ function buildMetadataLines(msg: InboundMessage, options: EnvelopeOptions): stri
     lines.push(`- **Sender**: ${formatSender(msg)}`);
   }
 
-  // Timestamp
-  lines.push(`- **Timestamp**: ${formatTimestamp(msg.timestamp, options)}`);
+  // Timestamp (formatted + relative)
+  const relative = formatRelativeTime(msg.timestamp);
+  lines.push(`- **Timestamp**: ${formatTimestamp(msg.timestamp, options)} (${relative})`);
 
   // Format support hint
   const formatHint = msg.formatterHints?.formatHint;
