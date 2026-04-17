@@ -13,6 +13,7 @@ import type { InboundMessage, OutboundFile, OutboundMessage } from '../../core/t
 import { getDataDir } from '../../utils/paths.js';
 import { loadConfig } from '../../config/io.js';
 import { createLogger } from '../../logger.js';
+import { formatRelativeTime } from '../../utils/time.js';
 import type { BlueskyConfig, BlueskyInboundMessage, BlueskySource, DidMode, JetstreamEvent } from './types.js';
 import {
   CURSOR_BACKTRACK_US,
@@ -539,7 +540,7 @@ export class BlueskyAdapter implements ChannelAdapter {
       const details = extractPostDetails(record);
 
       if (details.createdAt) {
-        extraContext['Created'] = details.createdAt;
+        extraContext['Created'] = `${formatRelativeTime(details.createdAt)} (${details.createdAt})`;
       }
       if (details.langs.length > 0) {
         extraContext['Languages'] = details.langs.join(', ');
@@ -574,7 +575,7 @@ export class BlueskyAdapter implements ChannelAdapter {
         extraContext['Subject'] = subjectUri;
       }
       if (createdAt) {
-        extraContext['Created'] = createdAt;
+        extraContext['Created'] = `${formatRelativeTime(createdAt)} (${createdAt})`;
       }
 
       if (subjectUri) source.subjectUri = subjectUri;
@@ -586,12 +587,12 @@ export class BlueskyAdapter implements ChannelAdapter {
         extraContext['Subject DID'] = subjectDid;
       }
       if (createdAt) {
-        extraContext['Created'] = createdAt;
+        extraContext['Created'] = `${formatRelativeTime(createdAt)} (${createdAt})`;
       }
     } else if (record) {
       const createdAt = readString(record.createdAt);
       if (createdAt) {
-        extraContext['Created'] = createdAt;
+        extraContext['Created'] = `${formatRelativeTime(createdAt)} (${createdAt})`;
       }
       extraContext['Record'] = truncate(JSON.stringify(record));
     }
@@ -1293,7 +1294,7 @@ export class BlueskyAdapter implements ChannelAdapter {
       const details = extractPostDetails(record);
       postText = details.text || '';
       if (details.createdAt) {
-        extraContext['Created'] = details.createdAt;
+        extraContext['Created'] = `${formatRelativeTime(details.createdAt)} (${details.createdAt})`;
       }
       if (details.langs.length > 0) {
         extraContext['Languages'] = details.langs.join(', ');
