@@ -7,11 +7,13 @@ services:
     environment:
       - LETTABOT_CONFIG_YAML=${LETTABOT_CONFIG_YAML}
       - WORKING_DIR=/app
+      - DATA_DIR=/data
       - LOG_FORMAT=json
     volumes:
       - lettabot-data:/root/.letta
       - lettabot-credentials:/root/.lettabot/credentials
       - lettabot-research:/root/.local/share/lettabot
+      - lettabot-state:/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
@@ -24,3 +26,4 @@ volumes:
   lettabot-data:
   lettabot-credentials:
   lettabot-research:
+  lettabot-state:
