@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y git jq curl python3 make g++ && rm -rf 
 # Install uv for Python tooling (web-fetch, research-memory, enrichment)
 ADD https://astral.sh/uv/install.sh /uv-installer.sh
 RUN sh /uv-installer.sh && rm /uv-installer.sh
-ENV PATH="/root/.local/bin:${PATH}"
+ENV PATH="/root/.local/bin:/app/node_modules/.bin:${PATH}"
 WORKDIR /app
 
 COPY package*.json ./
