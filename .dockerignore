@@ -9,3 +9,5 @@ lettabot-agent.json
 data/
 *.log
 .skills/
+!.skills/web-fetch/
+!.skills/research-memory/
