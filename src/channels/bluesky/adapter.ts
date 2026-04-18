@@ -844,9 +844,9 @@ export class BlueskyAdapter implements ChannelAdapter {
 
       const params = new URLSearchParams();
       params.set('limit', String(config.limit));
-      if (this.notificationsCursor) {
-        params.set('cursor', this.notificationsCursor);
-      }
+      // Don't send cursor to API — PDS cursor behavior with reasons filter is
+      // unreliable (non-monotonic, sometimes ignored). We track position via
+      // indexedAt client-side instead.
       if (config.priority !== undefined) {
         params.set('priority', config.priority ? 'true' : 'false');
       }
@@ -893,11 +893,25 @@ export class BlueskyAdapter implements ChannelAdapter {
         this.notificationsInitialized = true;
         this.stateDirty = true;
         if (!backfill) {
-          if (deferredCursor) {
+          // Use the latest indexedAt from the initial page as our tracking point.
+          // The API cursor format varies across PDS versions and is sometimes
+          // unreliable (missing on subsequent polls, stale datetime, etc).
+          const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+          if (notifications.length > 0) {
+            const latestIndexed = notifications
+              .map((n: { indexedAt?: string }) => n.indexedAt)
+              .filter((d: string | undefined): d is string => !!d)
+              .sort()
+              .pop();
+            if (latestIndexed) {
+              this.notificationsCursor = latestIndexed;
+              this.stateDirty = true;
+            }
+          } else if (deferredCursor) {
             this.notificationsCursor = deferredCursor;
             this.stateDirty = true;
           }
-          log.info('Notifications cursor initialized (skipping initial backlog).');
+          log.info(`Notifications cursor initialized (skipping initial backlog, cursor=${this.notificationsCursor ?? 'none'}).`);
           return;
         }
         if (!deferredCursor) {
@@ -906,12 +920,25 @@ export class BlueskyAdapter implements ChannelAdapter {
         log.info('Notifications cursor initialized (backfill enabled).');
       }
 
-      if (!initializing && data.cursor) {
+      // Use the API cursor when available, but only if it moves forward.
+      // Some PDS versions return non-monotonic cursors that jump backwards,
+      // causing the same old notifications to be reprocessed every poll.
+      if (!initializing && data.cursor && data.cursor > (this.notificationsCursor ?? '')) {
         this.notificationsCursor = data.cursor;
         this.stateDirty = true;
       }
 
-      const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+      const rawNotifications = Array.isArray(data.notifications) ? data.notifications : [];
+      // When no API cursor was returned, filter by our stored indexedAt cursor
+      // to avoid reprocessing the same notifications every poll.
+      let notifications = rawNotifications;
+      if (!data.cursor && this.notificationsCursor && !initializing) {
+        notifications = rawNotifications.filter(
+          (n: { indexedAt?: string }) => !n.indexedAt || n.indexedAt > this.notificationsCursor!
+        );
+      }
+
+      log.info(`Notifications poll: ${rawNotifications.length} fetched, ${notifications.length} new, cursor=${this.notificationsCursor ?? 'none'}, responseCursor=${data.cursor ?? 'none'}, initializing=${initializing}`);
       if (notifications.length === 0) {
         if (initializing && deferredCursor) {
           this.notificationsCursor = deferredCursor;
@@ -924,6 +951,17 @@ export class BlueskyAdapter implements ChannelAdapter {
       const ordered = [...notifications].reverse();
       for (const notification of ordered) {
         await this.processNotification(notification);
+      }
+
+      // Advance cursor to the latest indexedAt we've seen
+      const latestSeen = ordered
+        .map((n: { indexedAt?: string }) => n.indexedAt)
+        .filter((d: string | undefined): d is string => !!d)
+        .sort()
+        .pop();
+      if (latestSeen && latestSeen > (this.notificationsCursor ?? '')) {
+        this.notificationsCursor = latestSeen;
+        this.stateDirty = true;
       }
 
       if (initializing && deferredCursor) {
