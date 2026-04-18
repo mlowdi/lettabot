@@ -24,6 +24,12 @@ if command -v lettabot >/dev/null 2>&1; then
   exec lettabot bluesky "$@"
 fi
 
+# Docker: lettabot installed at /app but agent skills are under ~/.letta/agents/
+if [[ -f /app/dist/cli.js ]]; then
+  cd /app
+  exec node /app/dist/cli.js bluesky "$@"
+fi
+
 echo "Error: unable to resolve a Bluesky CLI entrypoint." >&2
-echo "Expected one of: $REPO_ROOT/dist/cli.js, $REPO_ROOT/src/cli.ts (via npx tsx), or lettabot on PATH." >&2
+echo "Expected one of: $REPO_ROOT/dist/cli.js, $REPO_ROOT/src/cli.ts (via npx tsx), lettabot on PATH, or /app/dist/cli.js (Docker)." >&2
 exit 1
