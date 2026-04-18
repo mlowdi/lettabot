@@ -10,6 +10,7 @@ services:
       - LOG_FORMAT=json
     volumes:
       - lettabot-data:/root/.letta
+      - lettabot-credentials:/root/.lettabot/credentials
       - lettabot-research:/root/.local/share/lettabot
     restart: unless-stopped
     healthcheck:
@@ -21,4 +22,5 @@ services:
 
 volumes:
   lettabot-data:
+  lettabot-credentials:
   lettabot-research:
