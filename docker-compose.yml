@@ -6,6 +6,7 @@ services:
       - "9090:9090"
     environment:
       - LETTABOT_CONFIG_YAML=${LETTABOT_CONFIG_YAML}
+      - WORKING_DIR=/app
       - LOG_FORMAT=json
     volumes:
       - lettabot-data:/root/.letta
