@@ -1,0 +1,23 @@
+services:
+  lettabot:
+    build: .
+    container_name: lettabot
+    ports:
+      - "9090:9090"
+    environment:
+      - LETTABOT_CONFIG_YAML=${LETTABOT_CONFIG_YAML}
+      - LOG_FORMAT=json
+    volumes:
+      - lettabot-data:/root/.letta
+      - lettabot-research:/root/.local/share/lettabot
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  lettabot-data:
+  lettabot-research:
