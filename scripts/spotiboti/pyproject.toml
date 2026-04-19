@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spotiboti"
+version = "0.1.0"
+description = "Utility to let AI agents manage my Spotify library"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "spotipy>=2.26.0",
+    "typer[all]>=0.15",
+]
+
+[project.scripts]
+spotiboti = "spotiboti.cli:app"
