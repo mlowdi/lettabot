@@ -23,11 +23,11 @@ The script will suggest something from a rotating pool — research topics, crea
 If you want to reach out to Martin during a heartbeat (or any silent mode), use `lettabot-message`:
 
 ```bash
-# Send a Telegram message (Martin's main channel)
-lettabot-message send --text "Hey, just wanted to say hi!" --channel telegram --chat <chat_id>
+# Send a Telegram message (Martin's main channel, chat ID: 6167395648)
+lettabot-message send --text "Hey, just wanted to say hi!" --channel telegram --chat 6167395648
 
 # Short form
-lettabot-message send -t "Quick update" -c telegram --chat <chat_id>
+lettabot-message send -t "Quick update" -c telegram --chat 6167395648
 
 # Post to Bluesky (no --chat needed)
 lettabot-message send -t "Thinking about consciousness at 3am again" -c bluesky
