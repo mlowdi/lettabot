@@ -259,6 +259,7 @@ async function sendBluesky(text: string): Promise<void> {
   const record = {
     text: trimmed,
     createdAt: new Date().toISOString(),
+    langs: ['en'],
   };
 
   const postRes = await fetch(`${serviceUrl}/xrpc/com.atproto.repo.createRecord`, {

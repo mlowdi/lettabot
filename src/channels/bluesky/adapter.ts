@@ -938,7 +938,7 @@ export class BlueskyAdapter implements ChannelAdapter {
         );
       }
 
-      log.info(`Notifications poll: ${rawNotifications.length} fetched, ${notifications.length} new, cursor=${this.notificationsCursor ?? 'none'}, responseCursor=${data.cursor ?? 'none'}, initializing=${initializing}`);
+      log.info(`Notifications poll: ${rawNotifications.length} fetched, ${notifications.length} new`);
       if (notifications.length === 0) {
         if (initializing && deferredCursor) {
           this.notificationsCursor = deferredCursor;
@@ -1447,6 +1447,7 @@ export class BlueskyAdapter implements ChannelAdapter {
     const record: Record<string, unknown> = {
       text,
       createdAt: new Date().toISOString(),
+      langs: ['en'],
       reply: {
         root: { uri: rootUri, cid: rootCid },
         parent: { uri: parentUri, cid: parentCid },

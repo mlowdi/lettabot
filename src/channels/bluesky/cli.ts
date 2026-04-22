@@ -346,6 +346,7 @@ async function handlePost(
     const record: Record<string, unknown> = {
       text: chunk,
       createdAt,
+      langs: ['en'],
     };
 
     // Add facets if any were detected (links, mentions, hashtags)
@@ -431,6 +432,7 @@ async function handleQuote(
     const record: Record<string, unknown> = {
       text: chunk,
       createdAt,
+      langs: ['en'],
     };
 
     // Add facets if any were detected (links, mentions, hashtags)
